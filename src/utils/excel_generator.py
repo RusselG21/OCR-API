@@ -75,8 +75,9 @@ class ExcelGenerator:
     def generate_birth_cert_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Generate Excel file for birth certificate data"""
         try:
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            excel_buffer = BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+
                 # Candiate Name Info Sheet
                 candidate_name_info_df = pd.DataFrame([data["personal_info"]])
                 candidate_name_info_df.to_excel(
@@ -87,7 +88,12 @@ class ExcelGenerator:
                 birth_info_df.to_excel(
                     writer, sheet_name="Birth Info", index=False)
 
-            excel_data = output.getvalue()
+                # Format worksheets for better readability
+                self._format_worksheets(writer)
+
+                logger.info("Excel data written to buffer using xlsxwriter")
+
+            excel_data = excel_buffer.getvalue()
             return {"excel_data": excel_data}
 
         except Exception as e:
