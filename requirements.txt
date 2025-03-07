@@ -7,3 +7,4 @@ pydantic_core==2.27.2
 python-multipart==0.0.20
 requests==2.32.3
 uvicorn==0.34.0
+XlsxWriter==3.2.0

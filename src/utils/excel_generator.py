@@ -102,8 +102,12 @@ class ExcelGenerator:
 
     def _format_worksheets(self, writer) -> None:
         """Format Excel worksheets for better readability"""
+        # Wrap text in all cells
+        cell_format = writer.book.add_format({'text_wrap': True})
+
         for sheet_name in writer.sheets:
             worksheet = writer.sheets[sheet_name]
             # Set column widths
             for i in range(10):  # Set width for first 10 columns
-                worksheet.set_column(i, i, 30)  # default width of 30
+                # default width of 50
+                worksheet.set_column(i, i, 50, cell_format)
