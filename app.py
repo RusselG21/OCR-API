@@ -1,9 +1,9 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import FileResponse, JSONResponse, Response
-from src.extractors import CVExtractor, BirthCertExtractor, APITimeoutError, IDExtractor, DiplomaExtractor, WorkPerminExtractor
+from fastapi import FastAPI, File, UploadFile
+from src.extractors import CVExtractor, BirthCertExtractor, IDExtractor, DiplomaExtractor, WorkPerminExtractor
 import os
 import logging
 import sys
+from src.utils import ExtractionProcess
 
 # Set up logging with detailed information
 logging.basicConfig(
@@ -23,358 +23,82 @@ headers = {"Ocp-Apim-Subscription-Key": "1afe622ee4aa47439faa619583316758"}
 
 @app.post("/extract_cv")
 async def extract(file: UploadFile = File(...)):
-    try:
-        # Validate the file
-        if not file.filename:
-            raise HTTPException(status_code=400, detail="No selected file")
+    """
+    Extract information from a CV/resume document.
 
-        logger.info(f"Received file: {file.filename}")
+    Args:
+        file (UploadFile): The CV document file to be processed.
 
-        # Get the file content
-        file_content = await file.read()
-        if not file_content:
-            raise HTTPException(status_code=400, detail="Empty file")
-
-        logger.info(f"File size: {len(file_content)} bytes")
-        files = {'file': (file.filename, file_content)}
-
-        # Process the file using the CV extractor
-        logger.info(f"Extracting data from file: {file.filename}")
-        extractor = CVExtractor(files, headers)
-        result = extractor.extract()
-
-        # Handle extraction errors
-        if not result:
-            logger.error("Extraction result is None")
-            raise HTTPException(
-                status_code=500, detail="Failed to process file")
-
-        if "error" in result:
-            error_msg = result["error"]
-            logger.error(f"Error in extraction: {error_msg}")
-            if "timed out" in error_msg.lower():
-                return JSONResponse(content={"detail": error_msg}, status_code=504)
-            return JSONResponse(content={"detail": error_msg}, status_code=500)
-
-        # Return Excel data
-        if "excel_data" in result:
-            logger.info("Using in-memory Excel data")
-            filename = result.get("filename", "extracted_cv.xlsx")
-            content_type = result.get(
-                "content_type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
-            logger.info(
-                f"Returning excel data with content type: {content_type}")
-            logger.info(
-                f"Excel data length: {len(result['excel_data'])} bytes")
-            logger.info(f"Excel filename: {filename}")
-
-            # Return with explicit headers to ensure browser handles it correctly
-            return Response(
-                content=result["excel_data"],
-                media_type=content_type,
-                headers={
-                    "Content-Disposition": f"attachment; filename=\"{filename}\"",
-                    "Content-Type": content_type
-                }
-            )
-        else:
-            raise HTTPException(
-                status_code=500, detail="Excel data not found in result")
-
-    except APITimeoutError as e:
-        logger.error(f"API timeout: {str(e)}")
-        return JSONResponse(content={"detail": str(e)}, status_code=504)
-    except Exception as e:
-        logger.error(f"Error in extract endpoint: {str(e)}")
-        import traceback
-        logger.error(traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"An error occurred: {str(e)}")
+    Returns:
+        dict: Extracted information from the CV in a structured format.
+    """
+    extrator = ExtractionProcess(CVExtractor, file, headers)
+    result = await extrator.proccess_extraction()
+    return result
 
 
 @app.post("/extract_birth_cert")
 async def extract_birth_cert(file: UploadFile = File(...)):
-    try:
-        # Validate the file
-        if not file.filename:
-            raise HTTPException(status_code=400, detail="No selected file")
+    """
+    Extract information from a birth certificate document.
 
-        logger.info(f"Received file: {file.filename}")
+    Args:
+        file (UploadFile): The birth certificate document file to be processed.
 
-        # Get the file content
-        file_content = await file.read()
-        if not file_content:
-            raise HTTPException(status_code=400, detail="Empty file")
-
-        logger.info(f"File size: {len(file_content)} bytes")
-        files = {'file': (file.filename, file_content)}
-
-        # Process the file using the Birth Certificate extractor
-        logger.info(f"Extracting data from file: {file.filename}")
-        extractor = BirthCertExtractor(files, headers)
-        result = extractor.extract()
-
-        # Handle extraction errors
-        if not result:
-            logger.error("Extraction result is None")
-            raise HTTPException(
-                status_code=500, detail="Failed to process file")
-
-        if "error" in result:
-            error_msg = result["error"]
-            logger.error(f"Error in extraction: {error_msg}")
-            if "timed out" in error_msg.lower():
-                return JSONResponse(content={"detail": error_msg}, status_code=504)
-            return JSONResponse(content={"detail": error_msg}, status_code=500)
-
-        # Return Excel data
-        if "excel_data" in result:
-            logger.info("Using in-memory Excel data")
-            filename = result.get("filename", "extracted_birth_cert.xlsx")
-            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-            logger.info(
-                f"Returning excel data with content type: {content_type}")
-            logger.info(
-                f"Excel data length: {len(result['excel_data'])} bytes")
-            logger.info(f"Excel filename: {filename}")
-
-            # Return with explicit headers to ensure browser handles it correctly
-            return Response(
-                content=result["excel_data"],
-                media_type=content_type,
-                headers={
-                    "Content-Disposition": f"attachment; filename=\"{filename}\"",
-                    "Content-Type": content_type
-                }
-            )
-        else:
-            raise HTTPException(
-                status_code=500, detail="Excel data not found in result")
-
-    except APITimeoutError as e:
-        logger.error(f"API timeout: {str(e)}")
-        return JSONResponse(content={"detail": str(e)}, status_code=504)
-    except Exception as e:
-        logger.error(f"Error in extract_birth_cert endpoint: {str(e)}")
-        import traceback
-        logger.error(traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"An error occurred: {str(e)}")
+    Returns:
+        dict: Structured data extracted from the birth certificate.
+    """
+    extrator = ExtractionProcess(BirthCertExtractor, file, headers)
+    result = await extrator.proccess_extraction()
+    return result
 
 
 @app.post("/extract_id")
 async def extract_id(file: UploadFile = File(...)):
-    try:
-        # Validate the file
-        if not file.filename:
-            raise HTTPException(status_code=400, detail="No selected file")
+    """
+    Extract information from an ID document.
 
-        logger.info(f"Received file: {file.filename}")
+    Args:
+        file (UploadFile): The ID document file to be processed.
 
-        # Get the file content
-        file_content = await file.read()
-        if not file_content:
-            raise HTTPException(status_code=400, detail="Empty file")
-
-        logger.info(f"File size: {len(file_content)} bytes")
-        files = {'file': (file.filename, file_content)}
-
-        # Process the file using the Birth Certificate extractor
-        logger.info(f"Extracting data from file: {file.filename}")
-        extractor = IDExtractor(files, headers)
-        result = extractor.extract()
-
-        # Handle extraction errors
-        if not result:
-            logger.error("Extraction result is None")
-            raise HTTPException(
-                status_code=500, detail="Failed to process file")
-
-        if "error" in result:
-            error_msg = result["error"]
-            logger.error(f"Error in extraction: {error_msg}")
-            if "timed out" in error_msg.lower():
-                return JSONResponse(content={"detail": error_msg}, status_code=504)
-            return JSONResponse(content={"detail": error_msg}, status_code=500)
-
-        # Return Excel data
-        if "excel_data" in result:
-            logger.info("Using in-memory Excel data")
-            filename = result.get("filename", "extracted_birth_cert.xlsx")
-            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-            logger.info(
-                f"Returning excel data with content type: {content_type}")
-            logger.info(
-                f"Excel data length: {len(result['excel_data'])} bytes")
-            logger.info(f"Excel filename: {filename}")
-
-            # Return with explicit headers to ensure browser handles it correctly
-            return Response(
-                content=result["excel_data"],
-                media_type=content_type,
-                headers={
-                    "Content-Disposition": f"attachment; filename=\"{filename}\"",
-                    "Content-Type": content_type
-                }
-            )
-        else:
-            raise HTTPException(
-                status_code=500, detail="Excel data not found in result")
-
-    except APITimeoutError as e:
-        logger.error(f"API timeout: {str(e)}")
-        return JSONResponse(content={"detail": str(e)}, status_code=504)
-    except Exception as e:
-        logger.error(f"Error in extract_birth_cert endpoint: {str(e)}")
-        import traceback
-        logger.error(traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"An error occurred: {str(e)}")
+    Returns:
+        dict: Structured data extracted from the ID document.
+    """
+    extrator = ExtractionProcess(IDExtractor, file, headers)
+    result = await extrator.proccess_extraction()
+    return result
 
 
 @app.post("/extract_diploma")
 async def extract_diploma(file: UploadFile = File(...)):
-    try:
-        # Validate the file
-        if not file.filename:
-            raise HTTPException(status_code=400, detail="No selected file")
+    """
+    Extract information from a diploma or educational certificate.
 
-        logger.info(f"Received file: {file.filename}")
+    Args:
+        file (UploadFile): The diploma document file to be processed.
 
-        # Get the file content
-        file_content = await file.read()
-        if not file_content:
-            raise HTTPException(status_code=400, detail="Empty file")
-
-        logger.info(f"File size: {len(file_content)} bytes")
-        files = {'file': (file.filename, file_content)}
-
-        # Process the file using the Birth Certificate extractor
-        logger.info(f"Extracting data from file: {file.filename}")
-        extractor = DiplomaExtractor(files, headers)
-        result = extractor.extract()
-
-        # Handle extraction errors
-        if not result:
-            logger.error("Extraction result is None")
-            raise HTTPException(
-                status_code=500, detail="Failed to process file")
-
-        if "error" in result:
-            error_msg = result["error"]
-            logger.error(f"Error in extraction: {error_msg}")
-            if "timed out" in error_msg.lower():
-                return JSONResponse(content={"detail": error_msg}, status_code=504)
-            return JSONResponse(content={"detail": error_msg}, status_code=500)
-
-        # Return Excel data
-        if "excel_data" in result:
-            logger.info("Using in-memory Excel data")
-            filename = result.get("filename", "extracted_birth_cert.xlsx")
-            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-            logger.info(
-                f"Returning excel data with content type: {content_type}")
-            logger.info(
-                f"Excel data length: {len(result['excel_data'])} bytes")
-            logger.info(f"Excel filename: {filename}")
-
-            # Return with explicit headers to ensure browser handles it correctly
-            return Response(
-                content=result["excel_data"],
-                media_type=content_type,
-                headers={
-                    "Content-Disposition": f"attachment; filename=\"{filename}\"",
-                    "Content-Type": content_type
-                }
-            )
-        else:
-            raise HTTPException(
-                status_code=500, detail="Excel data not found in result")
-
-    except APITimeoutError as e:
-        logger.error(f"API timeout: {str(e)}")
-        return JSONResponse(content={"detail": str(e)}, status_code=504)
-    except Exception as e:
-        logger.error(f"Error in extract_birth_cert endpoint: {str(e)}")
-        import traceback
-        logger.error(traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"An error occurred: {str(e)}")
+    Returns:
+        dict: Structured data extracted from the diploma document.
+    """
+    extrator = ExtractionProcess(DiplomaExtractor, file, headers)
+    result = await extrator.proccess_extraction()
+    return result
 
 
 @app.post("/extract_working_permit")
 async def extract_working_permit(file: UploadFile = File(...)):
-    try:
-        # Validate the file
-        if not file.filename:
-            raise HTTPException(status_code=400, detail="No selected file")
+    """
+    Extract information from a working permit document.
 
-        logger.info(f"Received file: {file.filename}")
+    Args:
+        file (UploadFile): The working permit document file to be processed.
 
-        # Get the file content
-        file_content = await file.read()
-        if not file_content:
-            raise HTTPException(status_code=400, detail="Empty file")
-
-        logger.info(f"File size: {len(file_content)} bytes")
-        files = {'file': (file.filename, file_content)}
-
-        # Process the file using the Birth Certificate extractor
-        logger.info(f"Extracting data from file: {file.filename}")
-        extractor = WorkPerminExtractor(files, headers)
-        result = extractor.extract()
-
-        # Handle extraction errors
-        if not result:
-            logger.error("Extraction result is None")
-            raise HTTPException(
-                status_code=500, detail="Failed to process file")
-
-        if "error" in result:
-            error_msg = result["error"]
-            logger.error(f"Error in extraction: {error_msg}")
-            if "timed out" in error_msg.lower():
-                return JSONResponse(content={"detail": error_msg}, status_code=504)
-            return JSONResponse(content={"detail": error_msg}, status_code=500)
-
-        # Return Excel data
-        if "excel_data" in result:
-            logger.info("Using in-memory Excel data")
-            filename = result.get("filename", "extracted_birth_cert.xlsx")
-            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-            logger.info(
-                f"Returning excel data with content type: {content_type}")
-            logger.info(
-                f"Excel data length: {len(result['excel_data'])} bytes")
-            logger.info(f"Excel filename: {filename}")
-
-            # Return with explicit headers to ensure browser handles it correctly
-            return Response(
-                content=result["excel_data"],
-                media_type=content_type,
-                headers={
-                    "Content-Disposition": f"attachment; filename=\"{filename}\"",
-                    "Content-Type": content_type
-                }
-            )
-        else:
-            raise HTTPException(
-                status_code=500, detail="Excel data not found in result")
-
-    except APITimeoutError as e:
-        logger.error(f"API timeout: {str(e)}")
-        return JSONResponse(content={"detail": str(e)}, status_code=504)
-    except Exception as e:
-        logger.error(f"Error in extract_birth_cert endpoint: {str(e)}")
-        import traceback
-        logger.error(traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"An error occurred: {str(e)}")
+    Returns:
+        dict: Structured data extracted from the working permit document.
+    """
+    extrator = ExtractionProcess(WorkPerminExtractor, file, headers)
+    result = await extrator.proccess_extraction()
+    return result
 
 
 if __name__ == "__main__":

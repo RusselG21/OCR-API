@@ -10,7 +10,23 @@ class ExcelGenerator:
     """Utility class to generate Excel files from structured data"""
 
     def generate_cv_excel(self, cv_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate Excel file from CV data"""
+        """
+        Generate Excel file from CV data.
+
+        Creates a multi-sheet Excel document with separate sheets for:
+        - Personal Information
+        - Introduction
+        - Work Experience
+        - Technical Skills
+        - Education
+        - Awards
+
+        Args:
+            cv_data (Dict[str, Any]): Dictionary containing structured CV data
+
+        Returns:
+            Dict[str, Any]: Dictionary with Excel data as bytes or error information
+        """
         try:
             # Create Excel file in memory using BytesIO
             excel_buffer = BytesIO()
@@ -73,7 +89,18 @@ class ExcelGenerator:
             return {"error": f"Error creating Excel file: {str(e)}"}
 
     def generate_birth_cert_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate Excel file for birth certificate data"""
+        """
+        Generate Excel file for birth certificate data.
+
+        Creates an Excel document containing extracted birth certificate 
+        information on a single sheet.
+
+        Args:
+            data (Dict[str, Any]): Dictionary containing structured birth certificate data
+
+        Returns:
+            Dict[str, Any]: Dictionary with Excel data as bytes or error information
+        """
         try:
             excel_buffer = BytesIO()
             with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
@@ -96,7 +123,18 @@ class ExcelGenerator:
             return {"error": f"Failed to generate Excel: {str(e)}"}
 
     def generate_id_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate Excel file for birth certificate data"""
+        """
+        Generate Excel file for ID document data.
+
+        Creates an Excel document containing ID information such as ID type,
+        number, name details, date of birth, and address.
+
+        Args:
+            data (Dict[str, Any]): Dictionary containing structured ID document data
+
+        Returns:
+            Dict[str, Any]: Dictionary with Excel data as bytes or error information
+        """
         try:
             excel_buffer = BytesIO()
             with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
@@ -120,7 +158,18 @@ class ExcelGenerator:
             return {"error": f"Failed to generate Excel: {str(e)}"}
 
     def generate_diploma_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate Excel file for birth certificate data"""
+        """
+        Generate Excel file for diploma or educational certificate data.
+
+        Creates an Excel document containing diploma details including 
+        candidate name, school name, graduation date, and other relevant information.
+
+        Args:
+            data (Dict[str, Any]): Dictionary containing structured diploma data
+
+        Returns:
+            Dict[str, Any]: Dictionary with Excel data as bytes or error information
+        """
         logger.warning(data)
         try:
             excel_buffer = BytesIO()
@@ -145,7 +194,18 @@ class ExcelGenerator:
             return {"error": f"Failed to generate Excel: {str(e)}"}
 
     def generate_working_permit_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate Excel file for working permit data"""
+        """
+        Generate Excel file for working permit data.
+
+        Creates an Excel document containing working permit details such as
+        candidate name, permit validity dates, and other relevant information.
+
+        Args:
+            data (Dict[str, Any]): Dictionary containing structured working permit data
+
+        Returns:
+            Dict[str, Any]: Dictionary with Excel data as bytes or error information
+        """
         logger.warning(data)
         try:
             excel_buffer = BytesIO()
@@ -170,7 +230,18 @@ class ExcelGenerator:
             return {"error": f"Failed to generate Excel: {str(e)}"}
 
     def _format_worksheets(self, writer) -> None:
-        """Format Excel worksheets for better readability"""
+        """
+        Format Excel worksheets for better readability.
+
+        Applies consistent formatting to all worksheets in the Excel document,
+        including text wrapping and column width adjustments.
+
+        Args:
+            writer: The ExcelWriter object containing the worksheets to format
+
+        Returns:
+            None
+        """
         # Wrap text in all cells
         cell_format = writer.book.add_format({'text_wrap': True})
 
