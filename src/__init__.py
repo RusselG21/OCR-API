@@ -1,4 +1,4 @@
-from .extractors import CVExtractor, ExtractorError, APITimeoutError
+from .extractors import ExtractorError, APITimeoutError
 
-__all__ = ['CVExtractor', 'ExtractorError',
+__all__ = ['ExtractorError',
            'APITimeoutError', 'APIResponseError']

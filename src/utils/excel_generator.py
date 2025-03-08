@@ -144,6 +144,31 @@ class ExcelGenerator:
             logger.error(f"Error generating birth certificate Excel: {str(e)}")
             return {"error": f"Failed to generate Excel: {str(e)}"}
 
+    def generate_working_permit_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate Excel file for working permit data"""
+        logger.warning(data)
+        try:
+            excel_buffer = BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+
+                # ID Info Sheet
+                _info_df = pd.DataFrame([data["working_permit_info"]]) if data["working_permit_info"] else pd.DataFrame(
+                    columns=["Candidate Name", "Validity"])
+                _info_df.to_excel(
+                    writer, sheet_name="Personal Info", index=False)
+
+                # Format worksheets for better readability
+                self._format_worksheets(writer)
+
+                logger.info("Excel data written to buffer using xlsxwriter")
+
+            excel_data = excel_buffer.getvalue()
+            return {"excel_data": excel_data}
+
+        except Exception as e:
+            logger.error(f"Error generating birth certificate Excel: {str(e)}")
+            return {"error": f"Failed to generate Excel: {str(e)}"}
+
     def _format_worksheets(self, writer) -> None:
         """Format Excel worksheets for better readability"""
         # Wrap text in all cells
