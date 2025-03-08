@@ -7,18 +7,18 @@ from ..utils.excel_generator import ExcelGenerator
 logger = logging.getLogger(__name__)
 
 
-class BirthCertExtractor(BaseExtractor):
-    """Extractor specialized for Birth Certificate data"""
+class DiplomaExtractor(BaseExtractor):
+    """Extractor specialized for Diploma data"""
 
     def __init__(self, files: Dict, headers: Dict):
         super().__init__(
-            api_url="https://api.finhero.asia/finxtract/ph-birth-cert/extract-birth-certificate",
+            api_url="https://api.finhero.asia/finxtract/ph-school-record/extract-diploma",
             files=files,
             headers=headers
         )
 
     def extract(self) -> Dict[str, Any]:
-        """Extract Birth Certificate data from API and convert to Excel format"""
+        """Extract Diploma data from API and convert to Excel format"""
         try:
             # Make API request
             data = self._make_api_request()
@@ -30,11 +30,11 @@ class BirthCertExtractor(BaseExtractor):
             logger.info(f"Processing file: {filename}")
 
             # Extract data from API response
-            extracted_data = self._extract_birth_cert_data(data)
+            extracted_data = self._extract_diploma_data(data)
 
             # Generate Excel file
             excel_generator = ExcelGenerator()
-            excel_result = excel_generator.generate_birth_cert_excel(
+            excel_result = excel_generator.generate_diploma_excel(
                 extracted_data)
 
             if excel_result.get("error"):
@@ -42,7 +42,7 @@ class BirthCertExtractor(BaseExtractor):
 
             return {
                 "excel_data": excel_result["excel_data"],
-                "filename": f"{filename}_birth_cert_data.xlsx",
+                "filename": f"{filename}_diploma.xlsx",
                 "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             }
 
@@ -52,19 +52,23 @@ class BirthCertExtractor(BaseExtractor):
             logger.error(traceback.format_exc())
             return {"error": f"Unexpected error: {str(e)}"}
 
-    def _extract_birth_cert_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract and structure all Birth Certificate data from API response"""
+    def _extract_diploma_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract and structure all Diploma data from API response"""
         fields = data.get("data", {}).get("fields", {})
 
         return {
-            "personal_info": self._extract_personal_info(fields),
+            "diploma_info": self._doploma_info(fields),
         }
 
-    def _extract_personal_info(self, fields: Dict[str, Any]) -> Dict[str, str]:
-        """Extract personal information from birth certificate"""
-        name_field = fields.get("Candidate_Name", {})
-        dob_field = fields.get("Date_Of_Birth", {})
+    def _doploma_info(self, fields: Dict[str, Any]) -> Dict[str, str]:
+        """Extract document type information from diploma"""
+        doc_field = fields.get("Doc_Type", {})
+        candidate_name_field = fields.get("Candidate_Name", {})
+        school_name_field = fields.get("School_Name", {})
+        date_graduated_field = fields.get("Date_Graduated", {})
         return {
-            "Name": name_field.get("value", ""),
-            "Date Of Birth": dob_field.get("value", ""),
+            "Document Type": doc_field.get("value", ""),
+            "Candidate Name": candidate_name_field.get("value", ""),
+            "School Name": school_name_field.get("value", ""),
+            "Date graduated": date_graduated_field.get("value", ""),
         }

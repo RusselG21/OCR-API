@@ -78,15 +78,10 @@ class ExcelGenerator:
             excel_buffer = BytesIO()
             with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
 
-                # Candiate Name Info Sheet
+                # Candiate Info Sheet
                 candidate_name_info_df = pd.DataFrame([data["personal_info"]])
                 candidate_name_info_df.to_excel(
                     writer, sheet_name="Personal Info", index=False)
-
-                # Birth Info Sheet
-                birth_info_df = pd.DataFrame([data["birth_info"]])
-                birth_info_df.to_excel(
-                    writer, sheet_name="Birth Info", index=False)
 
                 # Format worksheets for better readability
                 self._format_worksheets(writer)
@@ -109,6 +104,31 @@ class ExcelGenerator:
                 # ID Info Sheet
                 _info_df = pd.DataFrame(data["id_info"]) if data["id_info"] else pd.DataFrame(
                     columns=["ID Type", "ID Number", "Candidate Name", "Candidate LastName", "Candidate Middlename", "Date of birth", "Candidate Address"])
+                _info_df.to_excel(
+                    writer, sheet_name="Personal Info", index=False)
+
+                # Format worksheets for better readability
+                self._format_worksheets(writer)
+
+                logger.info("Excel data written to buffer using xlsxwriter")
+
+            excel_data = excel_buffer.getvalue()
+            return {"excel_data": excel_data}
+
+        except Exception as e:
+            logger.error(f"Error generating birth certificate Excel: {str(e)}")
+            return {"error": f"Failed to generate Excel: {str(e)}"}
+
+    def generate_diploma_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate Excel file for birth certificate data"""
+        logger.warning(data)
+        try:
+            excel_buffer = BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+
+                # ID Info Sheet
+                _info_df = pd.DataFrame([data["diploma_info"]]) if data["diploma_info"] else pd.DataFrame(
+                    columns=["ID Type", "Candidate Name", "School Name", "Date Graduated", "Candidate Address"])
                 _info_df.to_excel(
                     writer, sheet_name="Personal Info", index=False)
 

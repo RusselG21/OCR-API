@@ -42,7 +42,7 @@ class IDExtractor(BaseExtractor):
 
             return {
                 "excel_data": excel_result["excel_data"],
-                "filename": f"{filename}_birth_cert_data.xlsx",
+                "filename": f"{filename}_id.xlsx",
                 "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             }
 
