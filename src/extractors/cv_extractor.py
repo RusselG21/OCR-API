@@ -81,6 +81,7 @@ class CVExtractor(BaseExtractor):
     def _extract_work_experience(self, extracted_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Extract work experience details"""
         work_exp = extracted_data.get("WorkingExperienceDetails", [])
+        logger.warning(f"Work Experience: {work_exp}")
         return work_exp
 
     def _extract_technical_skills(self, fields: Dict[str, Any]) -> List[str]:
