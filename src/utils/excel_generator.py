@@ -68,7 +68,7 @@ class ExcelGenerator:
                 awards_df.to_excel(writer, sheet_name='Awards', index=False)
 
                 # Format worksheets for better readability
-                self._format_worksheets(writer)
+                self._format_worksheets(writer, awards_df)
 
                 logger.info("Excel data written to buffer using xlsxwriter")
 
@@ -92,7 +92,7 @@ class ExcelGenerator:
         """
         Generate Excel file for birth certificate data.
 
-        Creates an Excel document containing extracted birth certificate 
+        Creates an Excel document containing extracted birth certificate
         information on a single sheet.
 
         Args:
@@ -111,7 +111,7 @@ class ExcelGenerator:
                     writer, sheet_name="Personal Info", index=False)
 
                 # Format worksheets for better readability
-                self._format_worksheets(writer)
+                self._format_worksheets(writer, candidate_name_info_df)
 
                 logger.info("Excel data written to buffer using xlsxwriter")
 
@@ -144,9 +144,8 @@ class ExcelGenerator:
                     columns=["ID Type", "ID Number", "Candidate Name", "Candidate LastName", "Candidate Middlename", "Date of birth", "Candidate Address"])
                 _info_df.to_excel(
                     writer, sheet_name="Personal Info", index=False)
-
                 # Format worksheets for better readability
-                self._format_worksheets(writer)
+                self._format_worksheets(writer, _info_df)
 
                 logger.info("Excel data written to buffer using xlsxwriter")
 
@@ -161,7 +160,7 @@ class ExcelGenerator:
         """
         Generate Excel file for diploma or educational certificate data.
 
-        Creates an Excel document containing diploma details including 
+        Creates an Excel document containing diploma details including
         candidate name, school name, graduation date, and other relevant information.
 
         Args:
@@ -182,7 +181,7 @@ class ExcelGenerator:
                     writer, sheet_name="Personal Info", index=False)
 
                 # Format worksheets for better readability
-                self._format_worksheets(writer)
+                self._format_worksheets(writer, _info_df)
 
                 logger.info("Excel data written to buffer using xlsxwriter")
 
@@ -216,9 +215,8 @@ class ExcelGenerator:
                     columns=["Candidate Name", "Validity"])
                 _info_df.to_excel(
                     writer, sheet_name="Personal Info", index=False)
-
                 # Format worksheets for better readability
-                self._format_worksheets(writer)
+                self._format_worksheets(writer, _info_df)
 
                 logger.info("Excel data written to buffer using xlsxwriter")
 
@@ -229,7 +227,7 @@ class ExcelGenerator:
             logger.error(f"Error generating birth certificate Excel: {str(e)}")
             return {"error": f"Failed to generate Excel: {str(e)}"}
 
-    def _format_worksheets(self, writer) -> None:
+    def _format_worksheets(self, writer, df) -> None:
         """
         Format Excel worksheets for better readability.
 
@@ -244,10 +242,19 @@ class ExcelGenerator:
         """
         # Wrap text in all cells
         cell_format = writer.book.add_format({'text_wrap': True})
+        red_format = writer.book.add_format(
+            {'bg_color': 'red', 'font_color': 'white'})
 
         for sheet_name in writer.sheets:
             worksheet = writer.sheets[sheet_name]
             # Set column widths
             for i in range(10):  # Set width for first 10 columns
-                # default width of 50
                 worksheet.set_column(i, i, 50, cell_format)
+
+            # Apply red background to blank cells
+            for row_num in range(1, len(df) + 1):  # Skip header row
+                for col_num, cell_value in enumerate(df.iloc[row_num - 1]):
+                    # Check for empty cells
+                    if cell_value == '' or pd.isna(cell_value):
+                        worksheet.write(
+                            row_num, col_num, 'Document might be unreadable or blurry', red_format)

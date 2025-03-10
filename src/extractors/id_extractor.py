@@ -56,7 +56,6 @@ class IDExtractor(BaseExtractor):
         """Extract and structure all ID data from API response"""
         id_info = data.get("data", {}).get("fields", {}).get(
             "IDs_info", {}).get("values", [])
-        logger.warning(f"ID Info {id_info}")
         return {
             "id_info": self._extract_personal_info(id_info),
         }
@@ -74,5 +73,4 @@ class IDExtractor(BaseExtractor):
                 }
                 if extracted:  # Only append if something was extracted
                     id_records.append(extracted)
-        logger.warning(f"ID Records {id_records}")
         return id_records
