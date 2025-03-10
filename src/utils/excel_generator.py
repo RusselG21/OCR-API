@@ -257,4 +257,4 @@ class ExcelGenerator:
                     # Check for empty cells
                     if cell_value == '' or pd.isna(cell_value):
                         worksheet.write(
-                            row_num, col_num, 'Document might be unreadable or blurry', red_format)
+                            row_num, col_num, 'Unable to extract text. The document is unclear or blurred.', red_format)
