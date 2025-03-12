@@ -1,9 +1,12 @@
 from fastapi import FastAPI, File, UploadFile
-from src.extractors import CVExtractor, BirthCertExtractor, IDExtractor, DiplomaExtractor, WorkPerminExtractor
+from src.extractors import CVExtractor, BirthCertExtractor, IDExtractor, DiplomaExtractor, WorkPerminExtractor, AirtableExtractor
 import os
 import logging
 import sys
 from src.utils import ExtractionProcess
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
 # Set up logging with detailed information
 logging.basicConfig(
@@ -19,6 +22,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 headers = {"Ocp-Apim-Subscription-Key": "1afe622ee4aa47439faa619583316758"}
+header_airtable = "patsgONcHhgZccHRk.dccf8082dbdb03e1a5182e32f57ea29c82f543c8dfb3246c32e8c90d0bf4c54f"
 
 
 @app.post("/extract_cv")
@@ -100,6 +104,40 @@ async def extract_working_permit(file: UploadFile = File(...)):
     result = await extrator.proccess_extraction()
     return result
 
+
+@app.get("/UploadExcelReulst")
+async def UploadExcelReulst():
+    SERVICE_ACCOUNT_FILE = "./config-google-service.json"
+    SCOPES = ['https://www.googleapis.com/auth/drive.file']
+
+    # Authenticate using the service account
+    credentials = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES
+    )
+    # Build the Google Drive API client
+    drive_service = build("drive", "v3", credentials=credentials)
+
+    # Upload metadata (file name and parent folder)
+    file_metadata = {
+        "name": "uploaded-file.xlsx",  # Name it will have in Google Drive
+        # Upload to the specified folder
+        "parents": ["12GT9G9l1lJNrm75FexQw8ACptO8c8bDK"],
+    }
+
+    EXCEL_FILE = "./DTR Russel Gutierrez.xlsx"
+
+    media = MediaFileUpload(
+        EXCEL_FILE, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    uploaded_file = drive_service.files().create(
+        body=file_metadata, media_body=media, fields="id, webViewLink").execute()
+
+    return {"status": "success", "file_link": uploaded_file.get("webViewLink")}
+
+
+@app.get("/extract_airtable")
+async def extract_airtable():
+    data = AirtableExtractor(files={}, headers=header_airtable).extract()
+    return data
 
 if __name__ == "__main__":
     import uvicorn

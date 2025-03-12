@@ -23,11 +23,12 @@ class APIResponseError(ExtractorError):
 class BaseExtractor:
     """Base class for all extractors"""
 
-    def __init__(self, api_url: str, files: Dict, headers: Dict):
+    def __init__(self, api_url: str, files: Dict, headers: Dict, operation=1):
         self.api_url = api_url
         self.files = files
         self.headers = headers
         self.timeout = 30  # API timeout in seconds
+        self.operation = operation
 
     def _get_original_filename(self) -> str:
         """Extract original filename from files dictionary"""
@@ -38,12 +39,20 @@ class BaseExtractor:
     def _make_api_request(self) -> Dict[str, Any]:
         """Make API request with error handling"""
         try:
-            response = requests.post(
-                self.api_url,
-                files=self.files,
-                headers=self.headers,
-                timeout=self.timeout
-            )
+            response: any
+            if self.operation == 1:
+                response = requests.post(
+                    self.api_url,
+                    files=self.files,
+                    headers=self.headers,
+                    timeout=self.timeout
+                )
+            else:
+                response = requests.get(
+                    self.api_url,
+                    headers=self.headers,
+                    timeout=self.timeout
+                )
             logger.info(f"API Response: {response.status_code}")
 
             if response.status_code != 200:

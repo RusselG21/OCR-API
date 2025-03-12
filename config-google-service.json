@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "handy-digit-453505-q2",
+  "private_key_id": "2dcbbd90e881981041ef7141489769a362d73848",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCxFWfWh7J96QUO\nhYmxEiOtEYh93yrd3ANa11CUw7NYD88BKq/EZmUZazOR6S6BPGPQW1P1WXkszzVr\n0G6wO7iIiDQmfidgbBWSmaO5xrUjEyA9JUzs2GDgGsDBhvQsCT0KbGcLaH9rqsyE\nha2/yFettCEdwPPnP2kDJrmwhYoFZaekkH4Y3k3mXQ1aAWBbBM4TrPUh3YMrBYnj\nS8N08ZTnAlmFl9n+z1UMX/4ii+GdyKnfn7e30KY8OzySHrW/F25VrFCtQaBLqZdp\nxWqcX8H03fWCNpq9O8dnrA6hW9ukjo1Tan4pYDnO4Z9WxtLfuj98uTQQU89kgkZY\n+L/3j+cXAgMBAAECggEATeI0QU59WpNZ/gENhiuMNVo4xeOZXuqdLx7z+fn4rwqE\n6OZ1V9QRMxTLIamFIqIE5GbGjmpDuUmJHVoW1LvvdV0yUpu5hdcDxe587ABROpP2\n4e29341rTiV2EafhTFzj0+nJiGL1Z80/FioVOPxMU8GdrxBmNZbWAOTPVqvlAGnx\n1MVerZnFSYsWE27BGBhLMYqoBG+3K1NVAJufQ5YFxh6U9pZ1P5SHBLolq+1Sc7JM\n/91+B/WGyZpE4O/KT3QjvqkFGcZd4YD91cBmpR95omthY1syCqB8apILPHQOzsXE\n8bIyKqF9mO+HdRIevxvA9Qmv7JrtQCkURq897gpsgQKBgQDeGBOQ0yvjX84Avpbi\nw20vP/0IPMXnmdO14E7DgkrjDe9FH3nd6/LLGCKQ7K8HkiCg3MYLidyJXX4LSUhn\neQAxOsN5XuizjgTtr5CcG/4DN1VEM8UDpETRNzXklG28o8ltez9raM4d94z2JliI\nyJwbgrSh8VBBQqocpXuLdvVY6QKBgQDMHjj4eNmuoozHamsXAOD84iE9Qz0FH494\nvvxuuYytehxJ/0ZO3ddLIg7dxhJMEyVLJCbIVrSsr9Xca4pAWrWn8TsV8vGeTPcE\nnSlmOCODwB5LSYAboO+CfVp5NzZaF9I8aXoepWV8cz59PP405+rE+SRJc0GRKPbj\nkzNFJxM//wKBgA+6QsBxw9zhLvRsisDaOAQtktyfeSBSi2SI0usTcfwsQ3JwrS+j\nAtmRBvmeWTK/DWJ23+t3Qs/TeBaShPcW4YWa9LbGmtIET6MJWMNFVDKkG3yt8di1\nLE5oi395Z2ABdUU0giQ4EsiafDf+NSzSkAN+uQ3yyc0lTGik61/P98XpAoGBALBC\nKM/nC5JRq19H9dGXYLD+U9WjCj4yUqHhyfmTIHdsyqDbXssbpZ2re0rmj0ZCAiIw\nxYyZ0sqLzBDajDemHNc459y8PQiFTYkebXFnaMOMUpyQi59QCYKU3Ftv4e9KQrEI\nI/vytwAQRBXBZYIqAgC1YzBJ5oSC6y75HXzJkUXhAoGBAIwXrlXzhLR2eYM91d2T\noTvq0TyxNEDK7FuycU2IXRh+YtwaUMhWuKy1sSZ8UnlEiUh6LCYwCXSIeh/+XOg+\nGRiB5PtuY8hzd/3W3/GcpIEKkfTVoSahLT80sCztB+lF3DkXd/8mWIk5VAsTYrsf\nW0etXMzUSjCCb3FnTWuJyE9B\n-----END PRIVATE KEY-----\n",
+  "client_email": "airtable-uploader@handy-digit-453505-q2.iam.gserviceaccount.com",
+  "client_id": "110724206812188974363",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/airtable-uploader%40handy-digit-453505-q2.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
