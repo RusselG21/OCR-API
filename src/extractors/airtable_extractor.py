@@ -21,7 +21,7 @@ class AirtableExtractor(BaseExtractor):
         )
 
     def extract(self) -> Dict[str, Any]:
-        """Extract Birth Certificate data from API and convert to Excel format"""
+        """Extract AirTable data from API and convert to Excel format"""
         try:
             # Make API request
             data = self._make_api_request()

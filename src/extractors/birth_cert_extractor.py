@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 import logging
 from .base_extractor import BaseExtractor
 from ..utils.excel_generator import ExcelGenerator
