@@ -76,8 +76,8 @@ class UpdateAirtable:
 
         return {
             "status": "success",
-            "file_id": file_id,  # ✅ File ID
-            "file_link": file_link,  # ✅ WebView link
+            "file_id": file_id,  # File ID
+            "file_link": file_link,  # WebView link
         }
 
     async def download_file(self, url):

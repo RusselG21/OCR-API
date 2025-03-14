@@ -20,8 +20,6 @@ app = FastAPI()
 # Finhero API key
 HEADERS = {"Ocp-Apim-Subscription-Key": "1afe622ee4aa47439faa619583316758"}
 # Airtable API key
-HEADER_AIRTABLE = "patsgONcHhgZccHRk.dccf8082dbdb03e1a5182e32f57ea29c82f543c8dfb3246c32e8c90d0bf4c54f"
-# Airtable API key
 AIRTABLE_API_KEY = "patsgONcHhgZccHRk.dccf8082dbdb03e1a5182e32f57ea29c82f543c8dfb3246c32e8c90d0bf4c54f"
 # Airtable base ID
 AIRTABLE_BASE_ID = "appZo3a2wKyMLh3UC"
@@ -134,11 +132,10 @@ async def update_airtable():
         - DOCUMENT_REQUIREMENTS: Dictionary defining document requirements.
         - CONSTANT_COLUMN: Dictionary mapping Airtable fields to their respective   constants.
         - CONSTANT_COLUMN_EXTRACTED: Dictionary mapping extracted constants to  their respective Airtable fields.
-        - HEADER_AIRTABLE: Headers required for Airtable API requests.
         - AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME,  PARENT_FOLDER_ID: Airtable and Google Drive configuration constants.
+    """
 
-  """
-    data = AirtableExtractor(files={}, headers=HEADER_AIRTABLE).extract()
+    data = AirtableExtractor(files={}, headers=AIRTABLE_API_KEY).extract()
 
     detail = data.get("records", [])
 
@@ -147,9 +144,13 @@ async def update_airtable():
 
     process_airtable = ProcessAirtable(CONSTANT_COLUMN, DOCUMENT_REQUIREMENTS,
                                        EXTRACTOR_MAP, CONSTANT_COLUMN_EXTRACTED, HEADERS, airtableClass, detail)
+
     response = await process_airtable.process_airtable()
 
-    return response
+    if response:
+        return response
+
+    return {"status": "No records processed"}
 
 
 if __name__ == "__main__":
