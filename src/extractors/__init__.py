@@ -6,8 +6,8 @@ from .work_permit_extractor import WorkPerminExtractor
 from .base_extractor import ExtractorError, APITimeoutError, APIResponseError
 from .airtable_extractor import AirtableExtractor
 
-__all__ = ['CVExtractor', 'BirthCertExtractor',
+__all__ = ['BirthCertExtractor',
            'ExtractorError', 'APITimeoutError',
            'APIResponseError', 'IDExtractor',
            "DiplomaExtractor", "WorkPerminExtractor",
-           "AirtableExtractor"]
+           "AirtableExtractor", "CVExtractor"]

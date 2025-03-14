@@ -46,8 +46,8 @@ class UpdateAirtable:
         # Return the response
         return {
             "status": "link updated",
-            "update_response": update_response.text,
-            "status_code": update_response.status_code
+            "id": candidate_id,
+            "update column": column_name
         }
 
     async def send_to_google_drive(self, file_byte, excelname):

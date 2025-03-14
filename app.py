@@ -1,11 +1,9 @@
-from io import BytesIO
 from fastapi import FastAPI, File, UploadFile
 from src.extractors import CVExtractor, BirthCertExtractor, IDExtractor, DiplomaExtractor, WorkPerminExtractor, AirtableExtractor
 import logging
 import sys
-from src.utils import ExtractionProcess, UpdateAirtable
-from mapper import CONSTANT_COLUMN, CONSTANT_COLUMN_EXTRACTED, DOCUMENT_REQUIREMENTS, EXTRACTOR_MAP
-import requests
+from src.utils import ExtractionProcess, UpdateAirtable, ProcessAirtable
+from src.mapper import EXTRACTOR_MAP, DOCUMENT_REQUIREMENTS, CONSTANT_COLUMN, CONSTANT_COLUMN_EXTRACTED
 
 # Set up logging with detailed information
 logging.basicConfig(
@@ -19,15 +17,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
-
+# Finhero API key
 HEADERS = {"Ocp-Apim-Subscription-Key": "1afe622ee4aa47439faa619583316758"}
+# Airtable API key
 HEADER_AIRTABLE = "patsgONcHhgZccHRk.dccf8082dbdb03e1a5182e32f57ea29c82f543c8dfb3246c32e8c90d0bf4c54f"
+# Airtable API key
 AIRTABLE_API_KEY = "patsgONcHhgZccHRk.dccf8082dbdb03e1a5182e32f57ea29c82f543c8dfb3246c32e8c90d0bf4c54f"
+# Airtable base ID
 AIRTABLE_BASE_ID = "appZo3a2wKyMLh3UC"
-AIRTABLE_FIELD_NAME = "Extracted Barangay Clearance"
+# Airtable table name
 AIRTABLE_TABLE_NAME = "Candidate Data"
+# Airtable record ID
 RECORD_ID = "rec4aPr0R1qS8v5HH"
-PARENT_FOLDER_ID = "12GT9G9l1lJNrm75FexQw8ACptO8c8bDK"
+# Google Drive folder ID
+PARENT_FOLDER_ID = "152BmT2NwrO9PQegVf5BZHI0D23hZ7OBD"
 
 
 @app.post("/extract_cv")
@@ -112,59 +115,41 @@ async def extract_working_permit(file: UploadFile = File(...)):
 
 @app.get("/update_airtable_V2")
 async def update_airtable():
+    """
+    Endpoint to update Airtable records and process attachments.
+
+    This endpoint fetches data from Airtable, processes attachments based on   specific document requirements,
+    downloads files, processes them, uploads the processed files to Google Drive, and updates Airtable with the new information.
+
+    Returns:
+        list: A list of statuses indicating the result of each Airtable update  operation.
+
+    Raises:
+        Exception: If any error occurs during the processing of files or updating   Airtable.
+
+    Dependencies:
+        - AirtableExtractor: Class to extract data from Airtable.
+        - UpdateAirtable: Class to handle Airtable updates and file downloads.
+        - EXTRACTOR_MAP: Dictionary mapping document methods to their respective    extractor classes.
+        - DOCUMENT_REQUIREMENTS: Dictionary defining document requirements.
+        - CONSTANT_COLUMN: Dictionary mapping Airtable fields to their respective   constants.
+        - CONSTANT_COLUMN_EXTRACTED: Dictionary mapping extracted constants to  their respective Airtable fields.
+        - HEADER_AIRTABLE: Headers required for Airtable API requests.
+        - AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME,  PARENT_FOLDER_ID: Airtable and Google Drive configuration constants.
+
+  """
     data = AirtableExtractor(files={}, headers=HEADER_AIRTABLE).extract()
+
     detail = data.get("records", [])
-    ilist = []  # empty list to hold the file
+
     airtableClass = UpdateAirtable(
         AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME, PARENT_FOLDER_ID)
-    # object inside []
-    for items in detail:
-        # check inside of field {}
-        field = items.get("fields", {})
-        # check key and value inside of field {}
-        for fieldkey, fieldvalue in field.items():
-            # check if key is in CONSTANT_COLUMN dictionary
-            for constcolumnkey, constcolumnvalue in CONSTANT_COLUMN.items():
-                # check value inside of CONSTANT_COLUMN dictionary
-                if constcolumnkey == fieldkey:
-                    # check if key is equal to fieldkey
-                    logger.error(f"fieldkey: {fieldkey}")
-                    if fieldvalue == 'No Attachment' and constcolumnvalue in field:
-                        # url is inside of field attachemt fielditem.get("url", "")
-                        for fielditem in field.get(constcolumnvalue, []):
-                            # check if key is in DOCUMENT_REQUIREMENTS dictionary
-                            for doc_method, doc_type in DOCUMENT_REQUIREMENTS.items():
-                                # check if constcolumnvalue in doc_type sample: "Birth Certificate" in ["Birth Certificate"]
-                                if constcolumnvalue in doc_type:
-                                    # check if key is in DOCUMENT_REQUIREMENTS dictionary
-                                    extractor_class = EXTRACTOR_MAP.get(
-                                        doc_method)
-                                    # if class is existing in EXTRACTOR_MAP
-                                    if extractor_class:
-                                        # download file from airtable
-                                        file_data = await airtableClass.download_file(fielditem.get("url", ""))
-                                        # process the file
-                                        extractor = ExtractionProcess(
-                                            extractor_class, file_data, HEADERS)
-                                        # get the result
-                                        result_excel = await extractor.proccess_extraction()
-                                        # get the file bytes
-                                        file_bytes = result_excel.body
-                                        # send the file to google drive
-                                        google_response = await airtableClass.send_to_google_drive(
-                                            file_bytes, f"{field.get("Name")}_{fielditem.get('filename', '')}")
-                                        file_id = google_response.get(
-                                            "file_id")
-                                        # update airtable
-                                        column_change = CONSTANT_COLUMN_EXTRACTED.get(
-                                            constcolumnvalue)
-                                        # update airtable
-                                        air_update = airtableClass.update(
-                                            file_id, items.get("id"), column_change)
-                                        # append the status
-                                        ilist.append(air_update.get("status"))
 
-    return ilist
+    process_airtable = ProcessAirtable(CONSTANT_COLUMN, DOCUMENT_REQUIREMENTS,
+                                       EXTRACTOR_MAP, CONSTANT_COLUMN_EXTRACTED, HEADERS, airtableClass, detail)
+    response = await process_airtable.process_airtable()
+
+    return response
 
 
 if __name__ == "__main__":
