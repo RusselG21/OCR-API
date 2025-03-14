@@ -5,6 +5,10 @@ import logging
 import sys
 from src.utils import ExtractionProcess, UpdateAirtable, ProcessAirtable
 from src.mapper import EXTRACTOR_MAP, DOCUMENT_REQUIREMENTS, CONSTANT_COLUMN, CONSTANT_COLUMN_EXTRACTED
+import threading
+import time
+import asyncio
+from contextlib import asynccontextmanager
 
 # Set up logging with detailed information
 logging.basicConfig(
@@ -17,7 +21,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+# Create a lifespan context manager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup code (runs when the app starts)
+    thread = threading.Thread(target=run_airtable_update_task, daemon=True)
+    thread.start()
+    logger.info("Background Airtable update service started")
+
+    yield  # This line separates startup from shutdown code
+
+    # Shutdown code would go here if needed
+    logger.info("Shutting down background tasks")
+
+# Create FastAPI app with lifespan
+app = FastAPI(lifespan=lifespan)
 
 # Finhero API key
 HEADERS = {"Ocp-Apim-Subscription-Key": "1afe622ee4aa47439faa619583316758"}
@@ -152,6 +172,24 @@ async def update_airtable():
         return response
 
     return {"status": "No records processed"}
+
+
+# Background task to run update_airtable every 60 seconds
+def run_airtable_update_task():
+    async def task_wrapper():
+        while True:
+            try:
+                logger.info("Running scheduled Airtable update")
+                await update_airtable()
+                logger.info("Scheduled Airtable update completed")
+            except Exception as e:
+                logger.error(f"Error in scheduled Airtable update: {e}")
+            await asyncio.sleep(60)  # Run every 60 seconds
+
+    # Create event loop for the background thread
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(task_wrapper())
 
 
 if __name__ == "__main__":
