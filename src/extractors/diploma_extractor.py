@@ -11,6 +11,13 @@ class DiplomaExtractor(BaseExtractor):
     """Extractor specialized for Diploma data"""
 
     def __init__(self, files: Dict, headers: Dict):
+        """
+        Initialize the DiplomaExtractor with files and headers.
+
+        Args:
+            files (Dict): Dictionary containing file data
+            headers (Dict): Dictionary containing request headers
+        """
         super().__init__(
             api_url="https://api.finhero.asia/finxtract/ph-school-record/extract-diploma",
             files=files,
@@ -18,7 +25,13 @@ class DiplomaExtractor(BaseExtractor):
         )
 
     def extract(self) -> Dict[str, Any]:
-        """Extract Diploma data from API and convert to Excel format"""
+        """
+        Extract Diploma data from API and convert to Excel format.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing Excel data, filename, and content type,
+            or error information if extraction fails
+        """
         try:
             # Make API request
             data = self._make_api_request()
@@ -53,7 +66,15 @@ class DiplomaExtractor(BaseExtractor):
             return {"error": f"Unexpected error: {str(e)}"}
 
     def _extract_diploma_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract and structure all Diploma data from API response"""
+        """
+        Extract and structure all Diploma data from API response.
+
+        Args:
+            data (Dict[str, Any]): Raw API response data
+
+        Returns:
+            Dict[str, Any]: Structured diploma information
+        """
         fields = data.get("data", {}).get("fields", {})
 
         return {
@@ -61,7 +82,15 @@ class DiplomaExtractor(BaseExtractor):
         }
 
     def _doploma_info(self, fields: Dict[str, Any]) -> Dict[str, str]:
-        """Extract document type information from diploma"""
+        """
+        Extract document information from diploma.
+
+        Args:
+            fields (Dict[str, Any]): Fields from the API response
+
+        Returns:
+            Dict[str, str]: Extracted diploma information
+        """
         doc_field = fields.get("Doc_Type", {})
         candidate_name_field = fields.get("Candidate_Name", {})
         school_name_field = fields.get("School_Name", {})

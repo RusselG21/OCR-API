@@ -11,6 +11,13 @@ class BirthCertExtractor(BaseExtractor):
     """Extractor specialized for Birth Certificate data"""
 
     def __init__(self, files: Dict, headers: Dict):
+        """
+        Initialize the BirthCertExtractor with files and headers.
+
+        Args:
+            files (Dict): Dictionary containing file data
+            headers (Dict): Dictionary containing request headers
+        """
         super().__init__(
             api_url="https://api.finhero.asia/finxtract/ph-birth-cert/extract-birth-certificate",
             files=files,
@@ -18,7 +25,13 @@ class BirthCertExtractor(BaseExtractor):
         )
 
     def extract(self) -> Dict[str, Any]:
-        """Extract Birth Certificate data from API and convert to Excel format"""
+        """
+        Extract Birth Certificate data from API and convert to Excel format.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing Excel data, filename, and content type,
+            or error information if extraction fails
+        """
         try:
             # Make API request
             data = self._make_api_request()
@@ -53,7 +66,15 @@ class BirthCertExtractor(BaseExtractor):
             return {"error": f"Unexpected error: {str(e)}"}
 
     def _extract_birth_cert_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract and structure all Birth Certificate data from API response"""
+        """
+        Extract and structure all Birth Certificate data from API response.
+
+        Args:
+            data (Dict[str, Any]): Raw API response data
+
+        Returns:
+            Dict[str, Any]: Structured birth certificate information
+        """
         fields = data.get("data", {}).get("fields", {})
 
         return {
@@ -61,7 +82,15 @@ class BirthCertExtractor(BaseExtractor):
         }
 
     def _extract_personal_info(self, fields: Dict[str, Any]) -> Dict[str, str]:
-        """Extract personal information from birth certificate"""
+        """
+        Extract personal information from birth certificate.
+
+        Args:
+            fields (Dict[str, Any]): Fields from the API response
+
+        Returns:
+            Dict[str, str]: Personal information including name and date of birth
+        """
         name_field = fields.get("Candidate_Name", {})
         dob_field = fields.get("Date_Of_Birth", {})
         return {

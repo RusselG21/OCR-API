@@ -11,6 +11,13 @@ class WorkPerminExtractor(BaseExtractor):
     """Extractor specialized for Work Permit data"""
 
     def __init__(self, files: Dict, headers: Dict):
+        """
+        Initialize the WorkPerminExtractor with files and headers.
+
+        Args:
+            files (Dict): Dictionary containing file data
+            headers (Dict): Dictionary containing request headers
+        """
         super().__init__(
             api_url="https://api.finhero.asia/finxtract/ph-work-permit/extract-work-permit",
             files=files,
@@ -18,7 +25,13 @@ class WorkPerminExtractor(BaseExtractor):
         )
 
     def extract(self) -> Dict[str, Any]:
-        """Extract Work Permit data from API and convert to Excel format"""
+        """
+        Extract Work Permit data from API and convert to Excel format.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing Excel data, filename, and content type,
+            or error information if extraction fails
+        """
         try:
             # Make API request
             data = self._make_api_request()
@@ -53,7 +66,15 @@ class WorkPerminExtractor(BaseExtractor):
             return {"error": f"Unexpected error: {str(e)}"}
 
     def _extract_work_permit_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract and structure all Diploma data from API response"""
+        """
+        Extract and structure all Work Permit data from API response.
+
+        Args:
+            data (Dict[str, Any]): Raw API response data
+
+        Returns:
+            Dict[str, Any]: Structured work permit information
+        """
         fields = data.get("data", {}).get("fields", {})
 
         return {
@@ -61,7 +82,15 @@ class WorkPerminExtractor(BaseExtractor):
         }
 
     def _work_permit_info(self, fields: Dict[str, Any]) -> Dict[str, str]:
-        """Extract document type information from diploma"""
+        """
+        Extract document information from work permit.
+
+        Args:
+            fields (Dict[str, Any]): Fields from the API response
+
+        Returns:
+            Dict[str, str]: Extracted work permit information
+        """
         candidate_name_field = fields.get("Candidate_Name", {})
         validity_field = fields.get("Validity", {})
         return {

@@ -30,20 +30,47 @@ class BaseExtractor:
     """
 
     def __init__(self, api_url: str, files: Dict, headers: Dict, operation=1):
+        """
+        Initialize the BaseExtractor with API connection details.
+
+        Args:
+            api_url (str): The URL of the API to connect to
+            files (Dict): Dictionary containing file data to be sent
+            headers (Dict): HTTP headers to be included in the request
+            operation (int, optional): Operation type - 1 for POST, anything else for GET. Defaults to 1.
+        """
         self.api_url = api_url
         self.files = files
         self.headers = headers
-        self.timeout = 30  # API timeout in seconds
+        self.timeout = 30
         self.operation = operation
 
     def _get_original_filename(self) -> str:
-        """Extract original filename from files dictionary"""
+        """
+        Extract original filename from files dictionary.
+
+        Returns:
+            str: The original filename if available, otherwise "unknown_file"
+        """
         if isinstance(self.files['file'], tuple):
             return self.files['file'][0]
         return "unknown_file"
 
     def _make_api_request(self) -> Dict[str, Any]:
-        """Make API request with error handling"""
+        """
+        Make API request with error handling.
+
+        Sends either a POST or GET request to the configured API endpoint
+        based on the operation type specified during initialization.
+
+        Returns:
+            Dict[str, Any]: The JSON response from the API
+
+        Raises:
+            APITimeoutError: If the API request times out
+            APIResponseError: If the API returns a non-200 status code or invalid JSON
+            ExtractorError: For other request failures
+        """
         try:
             response: any
             if self.operation == 1:
@@ -81,12 +108,31 @@ class BaseExtractor:
             raise APIResponseError("Invalid API response format")
 
     def _sanitize_filename(self, filename: str) -> str:
-        """Clean up filename for safe usage"""
+        """
+        Clean up filename for safe usage.
+
+        Args:
+            filename (str): The original filename to sanitize
+
+        Returns:
+            str: A sanitized version of the filename with potentially unsafe characters removed
+        """
         filename = filename.replace('.pdf', '').replace('.docx', '')
         sanitized = ''.join(c for c in filename if c.isalnum()
                             or c in [' ', '_', '-'])
         return sanitized if sanitized else "extracted_data"
 
     def extract(self) -> Dict[str, Any]:
-        """Main extraction method to be implemented by subclasses"""
+        """
+        Main extraction method to be implemented by subclasses.
+
+        This method should be overridden by subclasses to implement
+        the specific extraction logic.
+
+        Returns:
+            Dict[str, Any]: The extracted data
+
+        Raises:
+            NotImplementedError: If the subclass does not implement this method
+        """
         raise NotImplementedError("Subclasses must implement extract method")

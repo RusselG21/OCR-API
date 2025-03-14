@@ -6,6 +6,18 @@ logger = logging.getLogger(__name__)
 class ProcessAirtable:
 
     def __init__(self,  constant_column, document_requirements, extractor_map, constant_column_extracted, header, airtableClass, detail):
+        """
+        Initialize the ProcessAirtable class with required parameters.
+
+        Args:
+            constant_column (dict): Dictionary mapping column keys to their values
+            document_requirements (dict): Dictionary of document methods and their associated document types
+            extractor_map (dict): Dictionary mapping document methods to their extractor classes
+            constant_column_extracted (dict): Dictionary mapping document types to their extracted column names
+            header (dict): Headers for API requests
+            airtableClass (UpdateAirtable): Instance of the UpdateAirtable class for interacting with Airtable
+            detail (list): List of records to process from Airtable
+        """
         self.header = header
         self.airtableClass = airtableClass
         self.detail = detail
@@ -15,6 +27,15 @@ class ProcessAirtable:
         self.constant_column_extracted = constant_column_extracted
 
     async def process_airtable(self):
+        """
+        Process Airtable records, download attachments, extract data, and update Airtable with Google Drive links.
+
+        This method iterates through records in the detail list, finds attachments that need processing,
+        applies the appropriate extractor, saves the results to Google Drive, and updates the Airtable record.
+
+        Returns:
+            list: List of dictionaries containing the status and update information for each processed record
+        """
         response_list = []
         # object inside []
         for items in self.detail:
@@ -32,7 +53,7 @@ class ProcessAirtable:
                             for fielditem in field.get(constcolumnvalue, []):
                                 # check if key is in DOCUMENT_REQUIREMENTS dictionary
                                 for doc_method, doc_type in self.document_requirements.items():
-                                    # check if constcolumnvalue in doc_type sample: "Birth Certificate" in ["Birth           Certificate"]
+                                    # check if constcolumnvalue in doc_type sample: "Birth Certificate" in ["Birth Certificate"]
                                     if constcolumnvalue in doc_type:
                                         # check if key is in DOCUMENT_REQUIREMENTS dictionary
                                         extractor_class = self.extractor_map.get(
@@ -62,6 +83,7 @@ class ProcessAirtable:
                                             # append the status
                                             response_list.append({
                                                 "status": "success",
+                                                "name": field.get("Name"),
                                                 "airtable_update": air_update
                                             })
         return response_list

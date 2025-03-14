@@ -11,6 +11,13 @@ class IDExtractor(BaseExtractor):
     """Extractor specialized for ID data"""
 
     def __init__(self, files: Dict, headers: Dict):
+        """
+        Initialize the IDExtractor with files and headers.
+
+        Args:
+            files (Dict): Dictionary containing file data
+            headers (Dict): Dictionary containing request headers
+        """
         super().__init__(
             api_url="https://api.finhero.asia/finxtract/ph-id/extract-phid",
             files=files,
@@ -18,7 +25,13 @@ class IDExtractor(BaseExtractor):
         )
 
     def extract(self) -> Dict[str, Any]:
-        """Extract ID data from API and convert to Excel format"""
+        """
+        Extract ID data from API and convert to Excel format.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing Excel data, filename, and content type,
+            or error information if extraction fails
+        """
         try:
             # Make API request
             data = self._make_api_request()
@@ -53,7 +66,15 @@ class IDExtractor(BaseExtractor):
             return {"error": f"Unexpected error: {str(e)}"}
 
     def _extract_id_data(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Extract and structure all ID data from API response"""
+        """
+        Extract and structure all ID data from API response.
+
+        Args:
+            data (Dict[str, Any]): Raw API response data
+
+        Returns:
+            List[Dict[str, Any]]: Structured ID information
+        """
         id_info = data.get("data", {}).get("fields", {}).get(
             "IDs_info", {}).get("values", [])
         return {
@@ -61,7 +82,15 @@ class IDExtractor(BaseExtractor):
         }
 
     def _extract_personal_info(self, values: List[Dict[str, Any]]) -> List[Dict[str, any]]:
-        """Extract personal information from birth certificate"""
+        """
+        Extract personal information from IDs.
+
+        Args:
+            values (List[Dict[str, Any]]): List of ID information values from API response
+
+        Returns:
+            List[Dict[str, any]]: List of extracted ID records
+        """
         id_records: List[Dict[str, str]] = []
 
         for value in values:

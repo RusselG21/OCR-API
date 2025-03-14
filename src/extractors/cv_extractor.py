@@ -11,6 +11,13 @@ class CVExtractor(BaseExtractor):
     """Extractor specialized for CV/resume data"""
 
     def __init__(self, files: Dict, headers: Dict):
+        """
+        Initialize the CVExtractor with files and headers.
+
+        Args:
+            files (Dict): Dictionary containing file data
+            headers (Dict): Dictionary containing request headers
+        """
         super().__init__(
             api_url="https://api.finhero.asia/finxtract/cv/extractCV",
             files=files,
@@ -18,7 +25,13 @@ class CVExtractor(BaseExtractor):
         )
 
     def extract(self) -> Dict[str, Any]:
-        """Extract CV data from API and convert to Excel format"""
+        """
+        Extract CV data from API and convert to Excel format.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing Excel data, filename, and content type,
+            or error information if extraction fails
+        """
         try:
             # Make API request
             data = self._make_api_request()
@@ -52,7 +65,15 @@ class CVExtractor(BaseExtractor):
             return {"error": f"Unexpected error: {str(e)}"}
 
     def _extract_cv_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract and structure all CV data from API response"""
+        """
+        Extract and structure all CV data from API response.
+
+        Args:
+            data (Dict[str, Any]): Raw API response data
+
+        Returns:
+            Dict[str, Any]: Structured CV information including personal info, work experience, skills, etc.
+        """
         fields = data.get("data", {}).get("fields", {})
         extracted_data = data.get("data", {}).get("extractedData", {})
 
@@ -66,7 +87,15 @@ class CVExtractor(BaseExtractor):
         }
 
     def _extract_personal_info(self, fields: Dict[str, Any]) -> Dict[str, str]:
-        """Extract candidate's personal information"""
+        """
+        Extract candidate's personal information from CV.
+
+        Args:
+            fields (Dict[str, Any]): Fields from the API response
+
+        Returns:
+            Dict[str, str]: Personal information including name, contact, email and address
+        """
         return {
             "Name": fields.get("CandidateName", {}).get("value", ""),
             "Contact": fields.get("CandidateContactNo", {}).get("value", ""),
@@ -75,17 +104,41 @@ class CVExtractor(BaseExtractor):
         }
 
     def _extract_introduction(self, fields: Dict[str, Any]) -> str:
-        """Extract candidate's introduction/summary"""
+        """
+        Extract candidate's introduction/summary from CV.
+
+        Args:
+            fields (Dict[str, Any]): Fields from the API response
+
+        Returns:
+            str: Candidate's introduction or summary
+        """
         return fields.get("Introduction", {}).get("value", "")
 
     def _extract_work_experience(self, extracted_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Extract work experience details"""
+        """
+        Extract work experience details from CV.
+
+        Args:
+            extracted_data (Dict[str, Any]): Extracted data from API response
+
+        Returns:
+            List[Dict[str, Any]]: List of work experience entries
+        """
         work_exp = extracted_data.get("WorkingExperienceDetails", [])
         logger.warning(f"Work Experience: {work_exp}")
         return work_exp
 
     def _extract_technical_skills(self, fields: Dict[str, Any]) -> List[str]:
-        """Extract technical skills"""
+        """
+        Extract technical skills from CV.
+
+        Args:
+            fields (Dict[str, Any]): Fields from the API response
+
+        Returns:
+            List[str]: List of technical skills
+        """
         tech_skills = []
         skill_entries = fields.get("TechnicalSkill", {}).get("values", [])
         for skill in skill_entries:
@@ -93,7 +146,15 @@ class CVExtractor(BaseExtractor):
         return tech_skills
 
     def _extract_education(self, fields: Dict[str, Any]) -> List[str]:
-        """Extract education details"""
+        """
+        Extract education details from CV.
+
+        Args:
+            fields (Dict[str, Any]): Fields from the API response
+
+        Returns:
+            List[str]: List of education entries
+        """
         education_data = []
         education_entries = fields.get("Education", {}).get("values", [])
         for edu in education_entries:
@@ -101,7 +162,15 @@ class CVExtractor(BaseExtractor):
         return education_data
 
     def _extract_awards(self, fields: Dict[str, Any]) -> List[str]:
-        """Extract awards and certifications"""
+        """
+        Extract awards and certifications from CV.
+
+        Args:
+            fields (Dict[str, Any]): Fields from the API response
+
+        Returns:
+            List[str]: List of awards and certifications
+        """
         awards_data = []
         award_entries = fields.get("Awards", {}).get("values", [])
         for award in award_entries:
