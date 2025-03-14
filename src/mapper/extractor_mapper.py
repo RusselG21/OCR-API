@@ -89,7 +89,7 @@ CONSTANT_COLUMN_EXTRACTED = {
 DOCUMENT_REQUIREMENTS = {
     "extract_birth_cert": ["Birth Certificate"],
     "extract_cv": ["Upload Resume"],
-    "extract_id": ["SSS ID Upload, UMID Number Upload", "TIN Number Upload"],
+    "extract_id": ["SSS ID Upload", "UMID Number Upload", "TIN Number Upload"],
     "extract_diploma": ["School Records"],
     "extract_working_permit": ["Occupational Permit"]
 }

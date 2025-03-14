@@ -21,7 +21,13 @@ class APIResponseError(ExtractorError):
 
 
 class BaseExtractor:
-    """Base class for all extractors"""
+    """
+    Base class for all extractors
+
+    1 is for POST request
+    else is for GET request
+
+    """
 
     def __init__(self, api_url: str, files: Dict, headers: Dict, operation=1):
         self.api_url = api_url

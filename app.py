@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile
+import urllib
 from src.extractors import CVExtractor, BirthCertExtractor, IDExtractor, DiplomaExtractor, WorkPerminExtractor, AirtableExtractor
 import logging
 import sys
@@ -17,6 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
 # Finhero API key
 HEADERS = {"Ocp-Apim-Subscription-Key": "1afe622ee4aa47439faa619583316758"}
 # Airtable API key
@@ -24,9 +26,7 @@ AIRTABLE_API_KEY = "patsgONcHhgZccHRk.dccf8082dbdb03e1a5182e32f57ea29c82f543c8df
 # Airtable base ID
 AIRTABLE_BASE_ID = "appZo3a2wKyMLh3UC"
 # Airtable table name
-AIRTABLE_TABLE_NAME = "Candidate Data"
-# Airtable record ID
-RECORD_ID = "rec4aPr0R1qS8v5HH"
+AIRTABLE_TABLE_NAME = "Candidate Data copy"
 # Google Drive folder ID
 PARENT_FOLDER_ID = "152BmT2NwrO9PQegVf5BZHI0D23hZ7OBD"
 
@@ -111,7 +111,7 @@ async def extract_working_permit(file: UploadFile = File(...)):
     return result
 
 
-@app.get("/update_airtable_V2")
+@app.get("/update_airtable")
 async def update_airtable():
     """
     Endpoint to update Airtable records and process attachments.
@@ -134,8 +134,9 @@ async def update_airtable():
         - CONSTANT_COLUMN_EXTRACTED: Dictionary mapping extracted constants to  their respective Airtable fields.
         - AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME,  PARENT_FOLDER_ID: Airtable and Google Drive configuration constants.
     """
-
-    data = AirtableExtractor(files={}, headers=AIRTABLE_API_KEY).extract()
+    table_name_encoded = urllib.parse.quote(AIRTABLE_TABLE_NAME)
+    data = AirtableExtractor(
+        files={}, headers=AIRTABLE_API_KEY, table_name=table_name_encoded).extract()
 
     detail = data.get("records", [])
 

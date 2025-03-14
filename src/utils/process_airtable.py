@@ -15,7 +15,7 @@ class ProcessAirtable:
         self.constant_column_extracted = constant_column_extracted
 
     async def process_airtable(self):
-        ilist = []
+        response_list = []
         # object inside []
         for items in self.detail:
             # check inside of field {}
@@ -27,7 +27,6 @@ class ProcessAirtable:
                     # check value inside of CONSTANT_COLUMN dictionary
                     if constcolumnkey == fieldkey:
                         # check if key is equal to fieldkey
-                        logger.error(f"fieldkey: {fieldkey}")
                         if fieldvalue == 'No Attachment' and constcolumnvalue in field:
                             # url is inside of field attachemt fielditem.get("url", "")
                             for fielditem in field.get(constcolumnvalue, []):
@@ -61,8 +60,8 @@ class ProcessAirtable:
                                             air_update = self.airtableClass.update(
                                                 file_id, items.get("id"), column_change)
                                             # append the status
-                                            response = {
+                                            response_list.append({
                                                 "status": "success",
                                                 "airtable_update": air_update
-                                            }
-        return response
+                                            })
+        return response_list
