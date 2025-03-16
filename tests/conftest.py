@@ -15,13 +15,13 @@ except ImportError:
     print(f"Current Python executable: {sys.executable}")
 
 
-@pytest.fixture
+@pytest.fixture(scope="class")
 def mock_files():
     """Fixture to provide mock file data"""
     return {"file": ("document.pdf", b"test content", "application/pdf")}
 
 
-@pytest.fixture
+@pytest.fixture(scope="class")
 def mock_headers():
     """Fixture to provide mock request headers"""
     return {"Authorization": "Bearer test_token"}

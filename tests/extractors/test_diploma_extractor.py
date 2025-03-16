@@ -58,7 +58,7 @@ class TestDiplomaExtractor:
                 extracted_data)
 
     @patch('src.extractors.base_extractor.requests.post')
-    def test_extract_api_error(self, mock_post):
+    def test_extract_api_error(self, mock_post, mock_files, mock_headers):
         # Setup mock response for API error
         mock_response = MagicMock()
         mock_response.json.side_effect = Exception("API Error")
@@ -66,8 +66,7 @@ class TestDiplomaExtractor:
         mock_post.return_value = mock_response
 
         # Create instance of DiplomaExtractor
-        extractor = DiplomaExtractor(files={"file": (
-            "diploma.pdf", b"test content", "application/pdf")}, headers={"Authorization": "Bearer test_token"})
+        extractor = DiplomaExtractor(files=mock_files, headers=mock_headers)
 
         # Call extract method
         result = extractor.extract()
