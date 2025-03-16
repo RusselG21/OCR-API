@@ -1,3 +1,6 @@
+import io
+import os
+import aiofiles
 from fastapi import FastAPI, File, UploadFile
 import urllib
 from src.extractors import CVExtractor, BirthCertExtractor, IDExtractor, DiplomaExtractor, WorkPerminExtractor, AirtableExtractor
@@ -49,6 +52,9 @@ AIRTABLE_BASE_ID = "appZo3a2wKyMLh3UC"
 AIRTABLE_TABLE_NAME = "Candidate Data copy"
 # Google Drive folder ID
 PARENT_FOLDER_ID = "152BmT2NwrO9PQegVf5BZHI0D23hZ7OBD"
+
+# Background task to run update_airtable every 60 seconds
+RUN_TIME = 60
 
 
 @app.post("/extract_cv")
@@ -174,6 +180,39 @@ async def update_airtable():
     return {"status": "No records processed"}
 
 
+@app.post("/process_and_save_uat")
+async def process_and_save_uat():
+    STATIC_PATH = "./TestDocs/UAT/School Records UAT 2"
+
+    results = {}
+
+    for filename in os.listdir(STATIC_PATH):
+        file_path = os.path.join(STATIC_PATH, filename)
+
+        # Read file content
+        async with aiofiles.open(file_path, "rb") as f:
+            file_content = await f.read()
+
+        file = UploadFile(filename=filename, file=io.BytesIO(file_content))
+
+        # Call the extraction function function
+        response = await extract_diploma(file)
+
+        # Extract the response content
+        result_bytes = response.body
+
+        # Define the result file path
+        result_file_path = os.path.join(STATIC_PATH, f"{filename}_result.xlsx")
+
+        # Save the Excel file
+        async with aiofiles.open(result_file_path, "wb") as result_file:
+            await result_file.write(result_bytes)
+
+        results[filename] = result_file_path
+
+    return results
+
+
 # Background task to run update_airtable every 60 seconds
 def run_airtable_update_task():
     async def task_wrapper():
@@ -184,7 +223,7 @@ def run_airtable_update_task():
                 logger.info("Scheduled Airtable update completed")
             except Exception as e:
                 logger.error(f"Error in scheduled Airtable update: {e}")
-            await asyncio.sleep(60)  # Run every 60 seconds
+            await asyncio.sleep(RUN_TIME)
 
     # Create event loop for the background thread
     loop = asyncio.new_event_loop()
