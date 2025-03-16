@@ -2,6 +2,7 @@ from io import BytesIO
 from fastapi import UploadFile, HTTPException
 from fastapi.responses import Response, JSONResponse
 import logging
+import inspect
 
 logger = logging.getLogger(__name__)
 
@@ -19,19 +20,32 @@ class ExtractionProcess:
         self.extractor_class = extractor_class
         self.headers = headers
 
-        # ✅ Handle file as UploadFile (Form Upload)
-        if isinstance(file, UploadFile):
+        # Log file type for debugging
+        logger.info(
+            f"File type: {type(file)}, Module: {type(file).__module__}, Name: {type(file).__name__}")
+
+        # Check if file is truly an UploadFile instance
+        if hasattr(file, 'file') and hasattr(file, 'filename'):
+            logger.info(
+                f"File appears to be an UploadFile with filename: {file.filename}")
             self.file = file
             self.filename = file.filename
-
-        # ✅ Handle file as bytes (Downloaded from Airtable)
+            self.is_upload_file = True
+        # Check for bytes object
         elif isinstance(file, bytes):
+            logger.info("File identified as bytes object")
             self.file = BytesIO(file)  # Convert bytes to file-like object
             self.filename = "downloaded_file.xlsx"  # Default filename
-
+            self.is_upload_file = False
         else:
+            # Log additional information about the file object
+            logger.error(f"Invalid file type: {type(file)}")
+            logger.error(
+                f"File attributes: {dir(file) if hasattr(file, '__dict__') else 'No attributes'}")
+            logger.error(f"File representation: {str(file)[:100]}...")
+
             raise ValueError(
-                "Invalid file format: expected UploadFile or bytes")
+                f"Invalid file format: expected UploadFile or bytes, got {type(file)}")
 
     async def proccess_extraction(self):
         """
@@ -55,7 +69,7 @@ class ExtractionProcess:
             logger.info(f"Received file: {self.filename}")
 
             # ✅ Read file content based on type
-            if isinstance(self.file, UploadFile):
+            if self.is_upload_file:
                 file_content = await self.file.read()  # Read from UploadFile
             else:
                 file_content = self.file.getvalue()  # Read from BytesIO
@@ -97,7 +111,7 @@ class ExtractionProcess:
                 logger.info(f"Excel filename: {filename}")
 
                 return Response(
-                    content=result["excel_data"],
+                    content=result['excel_data'],
                     media_type=content_type,
                     headers={
                         "Content-Disposition": f"attachment; filename=\"{filename}\"",
@@ -105,11 +119,10 @@ class ExtractionProcess:
                     }
                 )
             else:
-                raise HTTPException(
-                    status_code=500, detail="Excel data not found in result")
+                return JSONResponse(content=result)
 
         except Exception as e:
-            logger.error(f"Error in extract_birth_cert endpoint: {str(e)}")
+            logger.error(f"Error in extraction process: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
             raise HTTPException(
