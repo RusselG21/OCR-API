@@ -10,35 +10,6 @@ import time
 import asyncio
 from contextlib import asynccontextmanager
 
-# Set up logging with detailed information
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("app.log"),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-logger = logging.getLogger(__name__)
-
-# Create a lifespan context manager
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup code (runs when the app starts)
-    thread = threading.Thread(target=run_airtable_update_task, daemon=True)
-    thread.start()
-    logger.info("Background Airtable update service started")
-
-    yield  # This line separates startup from shutdown code
-
-    # Shutdown code would go here if needed
-    logger.info("Shutting down background tasks")
-
-# Create FastAPI app with lifespan
-app = FastAPI(lifespan=lifespan)
-
 # Finhero API key
 HEADERS = {"Ocp-Apim-Subscription-Key": "1afe622ee4aa47439faa619583316758"}
 # Airtable API key
@@ -51,7 +22,40 @@ AIRTABLE_TABLE_NAME = "Candidate Data copy"
 PARENT_FOLDER_ID = "152BmT2NwrO9PQegVf5BZHI0D23hZ7OBD"
 
 # Run Time
-RUN_TIME = 60
+RUN_TIME = 5
+
+SHUTDOWN_EVENT = asyncio.Event()
+BACKGROUND_TASK = None
+
+# Set up logging with detailed information
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("app.log"),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
+
+
+# Create a lifespan context manager
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup code (runs when the app starts)
+    global BACKGROUND_TASK
+    # ✅ Uses FastAPI's event loop
+    task = asyncio.create_task(run_airtable_update_task())
+    logger.info("Background Airtable update service started")
+
+    yield  # This line separates startup from shutdown code
+
+    SHUTDOWN_EVENT.set()  # Signal the loop to stop on shutdown
+    await BACKGROUND_TASK   # Ensure the background task exits cleanly
+    logger.info("Shutting down background tasks")
+
+# Create FastAPI app with lifespan
+app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/extract_cv")
@@ -181,21 +185,15 @@ async def update_airtable():
 
 
 # Background task to run update_airtable every 60 seconds
-def run_airtable_update_task():
-    async def task_wrapper():
-        while True:
-            try:
-                logger.info("Running scheduled Airtable update")
-                await update_airtable()
-                logger.info("Scheduled Airtable update completed")
-            except Exception as e:
-                logger.error(f"Error in scheduled Airtable update: {e}")
-            await asyncio.sleep(RUN_TIME)  # Run every 60 seconds
-
-    # Create event loop for the background thread
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(task_wrapper())
+async def run_airtable_update_task():
+    while True:
+        try:
+            logger.info("Running scheduled Airtable update")
+            await update_airtable()
+            logger.info("Scheduled Airtable update completed")
+        except Exception as e:
+            logger.error(f"Error in scheduled Airtable update: {e}")
+        await asyncio.sleep(RUN_TIME)
 
 
 if __name__ == "__main__":
