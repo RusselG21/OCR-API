@@ -2,6 +2,8 @@ import logging
 from src.utils import ExtractionProcess
 logger = logging.getLogger(__name__)
 
+FIELD_ARGS = 'No Attachment'
+
 
 class ProcessAirtable:
 
@@ -48,7 +50,7 @@ class ProcessAirtable:
                     # check value inside of CONSTANT_COLUMN dictionary
                     if constcolumnkey == fieldkey:
                         # check if key is equal to fieldkey
-                        if fieldvalue == 'No Attachment' and constcolumnvalue in field:
+                        if fieldvalue == FIELD_ARGS and constcolumnvalue in field:
                             # url is inside of field attachemt fielditem.get("url", "")
                             for fielditem in field.get(constcolumnvalue, []):
                                 # check if key is in DOCUMENT_REQUIREMENTS dictionary

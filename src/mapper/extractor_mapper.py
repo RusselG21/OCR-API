@@ -86,6 +86,20 @@ CONSTANT_COLUMN_EXTRACTED = {
 }
 
 
+def extract_url() -> str:
+    """
+    Generates a filter string based on CONSTANT_COLUMN_EXTRACTED.
+
+    Returns:
+        str: A formatted string with document keys wrapped in LEN().
+    """
+    extracted_url = ""
+    for key in CONSTANT_COLUMN_EXTRACTED:
+        extracted_url += f"LEN({{{key}}})>0,"
+
+    return extracted_url[:-1]
+
+
 DOCUMENT_REQUIREMENTS = {
     "extract_birth_cert": ["Birth Certificate"],
     "extract_cv": ["Upload Resume"],
