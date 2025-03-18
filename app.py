@@ -50,6 +50,9 @@ AIRTABLE_TABLE_NAME = "Candidate Data copy"
 # Google Drive folder ID
 PARENT_FOLDER_ID = "152BmT2NwrO9PQegVf5BZHI0D23hZ7OBD"
 
+# Run Time
+RUN_TIME = 60
+
 
 @app.post("/extract_cv")
 async def extract(file: UploadFile = File(...)):
@@ -187,7 +190,7 @@ def run_airtable_update_task():
                 logger.info("Scheduled Airtable update completed")
             except Exception as e:
                 logger.error(f"Error in scheduled Airtable update: {e}")
-            await asyncio.sleep(60)  # Run every 60 seconds
+            await asyncio.sleep(RUN_TIME)  # Run every 60 seconds
 
     # Create event loop for the background thread
     loop = asyncio.new_event_loop()
