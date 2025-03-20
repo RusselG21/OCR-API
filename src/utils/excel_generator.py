@@ -254,7 +254,13 @@ class ExcelGenerator:
             # Apply red background to blank cells
             for row_num in range(1, len(df) + 1):  # Skip header row
                 for col_num, cell_value in enumerate(df.iloc[row_num - 1]):
+                    # Remove new lines if present
+                    if isinstance(cell_value, str):
+                        cell_value = cell_value.replace('\n', ' ')
                     # Check for empty cells
                     if cell_value == '' or pd.isna(cell_value):
                         worksheet.write(
                             row_num, col_num, 'Unable to extract text. The document is unclear or blurred.', red_format)
+                    else:
+                        worksheet.write(row_num, col_num,
+                                        cell_value, cell_format)
