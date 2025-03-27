@@ -3,6 +3,7 @@ from typing import Dict, Any, List, Optional
 import logging
 from .base_extractor import BaseExtractor
 from ..utils.excel_generator import ExcelGenerator
+from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +101,26 @@ class IDExtractor(BaseExtractor):
                     for key, sub_value in value.items()
                     if isinstance(sub_value, dict) and "value" in sub_value
                 }
-                if extracted:  # Only append if something was extracted
-                    id_records.append(extracted)
+
+                # Concatenate name, middlename, and lastname if they exist
+                full_name_parts = [
+                    extracted.get("Candidate_Name", ""),
+                    extracted.get("Candidate_Middlename", ""),
+                    extracted.get("Candidate_Lastname", "")
+                ]
+                # Remove empty values
+                full_name = " ".join(part for part in full_name_parts if part)
+
+               # Create an ordered dictionary with 'full_name' first
+                ordered_extracted = OrderedDict()
+                if full_name:
+                    # Add full_name first
+                    ordered_extracted["Candidate Name"] = full_name
+
+                # Add the rest of the extracted values
+                ordered_extracted.update(extracted)
+
+                if ordered_extracted:
+                    id_records.append(ordered_extracted)
+
         return id_records

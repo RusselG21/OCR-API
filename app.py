@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 # Finhero API key
 HEADERS = {"Ocp-Apim-Subscription-Key": "1afe622ee4aa47439faa619583316758"}
 # Airtable API key
-AIRTABLE_API_KEY = "patsgONcHhgZccHRk.dccf8082dbdb03e1a5182e32f57ea29c82f543c8dfb3246c32e8c90d0bf4c54f"
+AIRTABLE_API_KEY = "patEcKnnvJbUDOjPB.37ce823be38af31bed52f7cb63d606cf9c1eb97bf8ecce41bb1ee384428e4bd6"
 # Airtable base ID
 AIRTABLE_BASE_ID = "appZo3a2wKyMLh3UC"
 # Airtable table name
